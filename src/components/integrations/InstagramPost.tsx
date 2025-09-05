@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, ExternalLink, Play, Image as ImageIcon } from 'lucide-react';
+import { Heart, MessageCircle, ExternalLink, Star } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { InstagramPost as InstagramPostType } from '@/data/instagramData';
 
 interface InstagramPostProps {
@@ -12,8 +13,8 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ post, index }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp);
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -31,18 +32,7 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ post, index }) => {
   };
 
   const handlePostClick = () => {
-    window.open(post.permalink, '_blank');
-  };
-
-  const getMediaIcon = () => {
-    switch (post.media_type) {
-      case 'VIDEO':
-        return <Play className="w-6 h-6" />;
-      case 'CAROUSEL_ALBUM':
-        return <ImageIcon className="w-6 h-6" />;
-      default:
-        return null;
-    }
+    window.open(post.instagramUrl, '_blank');
   };
 
   return (
@@ -50,9 +40,19 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ post, index }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="bg-white rounded-lg shadow-lg overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300"
+      className="bg-white rounded-lg shadow-lg overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300 relative"
       onClick={handlePostClick}
     >
+      {/* Featured Badge */}
+      {post.featured && (
+        <div className="absolute top-3 left-3 z-10">
+          <Badge className="bg-gold text-primary font-inter font-semibold flex items-center gap-1">
+            <Star className="w-3 h-3" />
+            Destaque
+          </Badge>
+        </div>
+      )}
+
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden">
         {/* Loading Skeleton */}
@@ -63,14 +63,17 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ post, index }) => {
         {/* Error State */}
         {imageError && (
           <div className="absolute inset-0 bg-secondary/10 flex items-center justify-center">
-            <ImageIcon className="w-12 h-12 text-secondary/50" />
+            <div className="text-center">
+              <ExternalLink className="w-12 h-12 text-secondary/50 mx-auto mb-2" />
+              <p className="text-xs text-secondary">Erro ao carregar</p>
+            </div>
           </div>
         )}
 
         {/* Image */}
         {!imageError && (
           <img
-            src={post.media_url}
+            src={post.imageUrl}
             alt={post.caption}
             className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
@@ -86,16 +89,16 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ post, index }) => {
           <div className="absolute bottom-4 left-4 right-4">
             <div className="flex items-center justify-between text-white">
               <div className="flex items-center gap-3">
-                {post.like_count && (
+                {post.likes && post.likes > 0 && (
                   <div className="flex items-center gap-1">
                     <Heart className="w-4 h-4" />
-                    <span className="text-sm font-inter">{post.like_count}</span>
+                    <span className="text-sm font-inter">{post.likes}</span>
                   </div>
                 )}
-                {post.comments_count && (
+                {post.comments && post.comments > 0 && (
                   <div className="flex items-center gap-1">
                     <MessageCircle className="w-4 h-4" />
-                    <span className="text-sm font-inter">{post.comments_count}</span>
+                    <span className="text-sm font-inter">{post.comments}</span>
                   </div>
                 )}
               </div>
@@ -103,29 +106,46 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ post, index }) => {
             </div>
           </div>
         </div>
-
-        {/* Media Type Indicator */}
-        {getMediaIcon() && (
-          <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm rounded-full p-2 text-white">
-            {getMediaIcon()}
-          </div>
-        )}
       </div>
 
       {/* Content */}
       <div className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <p className="font-inter text-sm text-secondary leading-relaxed flex-1">
+        <div className="mb-3">
+          <p className="font-inter text-sm text-secondary leading-relaxed">
             {formatCaption(post.caption)}
           </p>
         </div>
+
+        {/* Hashtags */}
+        {post.hashtags && post.hashtags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {post.hashtags.slice(0, 3).map((tag, index) => (
+              <Badge
+                key={index}
+                variant="outline"
+                className="text-xs font-inter border-secondary/30 text-secondary"
+              >
+                #{tag}
+              </Badge>
+            ))}
+            {post.hashtags.length > 3 && (
+              <Badge
+                variant="outline"
+                className="text-xs font-inter border-secondary/30 text-secondary"
+              >
+                +{post.hashtags.length - 3}
+              </Badge>
+            )}
+          </div>
+        )}
         
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-secondary/70 font-inter">
-            @{post.username}
+        {/* Meta */}
+        <div className="flex items-center justify-between text-xs text-secondary/70">
+          <span className="font-inter">
+            @heitorbarros.tattoo
           </span>
-          <span className="text-xs text-secondary/70 font-inter">
-            {formatDate(post.timestamp)}
+          <span className="font-inter">
+            {formatDate(post.date)}
           </span>
         </div>
       </div>

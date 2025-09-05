@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { instagramAPI } from '@/lib/instagramApi';
+import { instagramPosts, instagramProfile, getFeaturedPosts, getRecentPosts } from '@/data/instagramData';
 import { InstagramPost } from '@/data/instagramData';
 
 interface UseInstagramReturn {
   posts: InstagramPost[];
-  profile: any;
+  featuredPosts: InstagramPost[];
+  profile: typeof instagramProfile;
   loading: boolean;
   error: string | null;
   isConfigured: boolean;
@@ -13,7 +14,7 @@ interface UseInstagramReturn {
 
 export const useInstagram = (limit: number = 8): UseInstagramReturn => {
   const [posts, setPosts] = useState<InstagramPost[]>([]);
-  const [profile, setProfile] = useState(null);
+  const [featuredPosts, setFeaturedPosts] = useState<InstagramPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,14 +23,17 @@ export const useInstagram = (limit: number = 8): UseInstagramReturn => {
       setLoading(true);
       setError(null);
 
-      // Fetch posts e profile em paralelo
-      const [postsData, profileData] = await Promise.all([
-        instagramAPI.getRecentPosts(limit),
-        instagramAPI.getProfile()
-      ]);
+      // Simular delay de API para UX realista
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      setPosts(postsData);
-      setProfile(profileData);
+      // Buscar posts (ordenados por data, mais recentes primeiro)
+      const sortedPosts = [...instagramPosts].sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      setPosts(getRecentPosts(limit));
+      setFeaturedPosts(getFeaturedPosts());
+
     } catch (err) {
       console.error('Instagram fetch error:', err);
       setError('Erro ao carregar posts do Instagram');
@@ -44,10 +48,11 @@ export const useInstagram = (limit: number = 8): UseInstagramReturn => {
 
   return {
     posts,
-    profile,
+    featuredPosts,
+    profile: instagramProfile,
     loading,
     error,
-    isConfigured: instagramAPI.isConfigured(),
+    isConfigured: true, // Nossa solução híbrida sempre está "configurada"
     refetch: fetchInstagramData
   };
 };
