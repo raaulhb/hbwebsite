@@ -170,7 +170,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
                 className="w-full border-accent text-accent hover:bg-accent hover:text-primary"
                 onClick={() => {
                   const instagramUrl =
-                    "https://instagram.com/heitorbarros.tattoo";
+                    "https://www.instagram.com/heitorbarros.ink";
                   window.open(instagramUrl, "_blank");
                 }}
               >

@@ -15,6 +15,7 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
     { label: 'Home', href: '#home' },
     { label: 'About', href: '#about' },
     { label: 'Gallery', href: '#gallery' },
+    { label: 'Instagram', href: '#instagram' },
     { label: 'Shop', href: '#shop' },
     { label: 'Contact', href: '#contact' },
   ];

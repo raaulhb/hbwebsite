@@ -22,7 +22,7 @@ const CTAButtons: React.FC<CTAButtonsProps> = ({
 
   const handleInstagramClick = () => {
     // Instagram do Heitor - substituir pelo @ real
-    const instagramUrl = "https://instagram.com/heitorbarros.tattoo";
+    const instagramUrl = "https://www.instagram.com/heitorbarros.ink";
     window.open(instagramUrl, "_blank");
   };
 
